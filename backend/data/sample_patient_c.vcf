@@ -1,0 +1,12 @@
+##fileformat=VCFv4.2
+##fileDate=20240101
+##source=PharmaGuard Demo Data
+##reference=hg19
+##INFO=<ID=GENE,Number=1,Type=String,Description="Gene name">
+##INFO=<ID=RSID,Number=1,Type=String,Description="dbSNP ID">
+##SAMPLE=<ID=PatientC,Description=Sample patient data for PharmaGuard demo>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+1	96915541	rs4244285	G	A	.	.	GENE=CYP2C19;RSID=rs4244285
+10	96542111	rs12248560	C	T	.	.	GENE=CYP2C19;RSID=rs12248560
+4	76615513	rs12239046	C	T	.	.	GENE=CYP2C9;RSID=rs12239046
+22	19730420	rs2231142	G	T	.	.	GENE=ABCG2;RSID=rs2231142
