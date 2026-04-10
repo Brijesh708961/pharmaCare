@@ -38,6 +38,7 @@ class ModelInferenceService:
         self.model = None
         self.encoders = None
         self.target_encoder = None
+        self._assets_loaded = False
         self.feature_order = [
             "gene",
             "drug",
@@ -48,9 +49,14 @@ class ModelInferenceService:
             "severity",
             "confidence",
         ]
-        self._load_assets()
+        # Do NOT load assets at init — load lazily on first use to avoid blocking startup
 
     def _load_assets(self) -> None:
+        """Lazy-load model assets on first use."""
+        if self._assets_loaded:
+            return
+        self._assets_loaded = True  # Mark early to avoid re-entrant loads
+
         if not self.enabled:
             return
 
@@ -65,11 +71,15 @@ class ModelInferenceService:
             self.enabled = False
             return
 
-        self.model = joblib.load(model_path)
-        self.encoders = joblib.load(encoders_path)
-        self.target_encoder = joblib.load(target_encoder_path)
+        try:
+            self.model = joblib.load(model_path)
+            self.encoders = joblib.load(encoders_path)
+            self.target_encoder = joblib.load(target_encoder_path)
+        except Exception:
+            self.enabled = False
 
     def predict_drug_response(self, drug_name: str, pharmacogenomic_profile: Dict) -> ModelPredictionResult:
+        self._load_assets()  # Lazy load on first use
         if not self.enabled or self.model is None:
             raise RuntimeError("ML model service is disabled")
 
@@ -98,6 +108,7 @@ class ModelInferenceService:
         return ModelPredictionResult(response=response, source="ml_model")
 
     def get_supported_drugs(self) -> List[str]:
+        self._load_assets()  # Lazy load on first use
         if not self.enabled or self.encoders is None or "drug" not in self.encoders:
             return []
         return sorted(list(self.encoders["drug"].classes_))

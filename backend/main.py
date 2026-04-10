@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()  # Load .env before anything else
+
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -14,6 +17,7 @@ from services.llm_explainer import LLMExplainer
 from services.model_inference import ModelInferenceService
 from services.ollama_report import interpret_report_json
 from services.ollama_chatbot import chat_with_bot
+from services.ai_vision_service import AIVisionService
 from services.auth_service import AuthService
 from models.schemas import (
     AnalysisRequest, AnalysisResponse, DrugListResponse, HealthResponse,
@@ -182,6 +186,19 @@ async def validate_vcf(file: UploadFile = File(...)):
     except Exception:
         raise HTTPException(status_code=400, detail="Unable to validate VCF input")
 
+@app.post("/api/scan-pill")
+async def scan_pill(file: UploadFile = File(...)):
+    """Extract drug name from a pill bottle image using Gemini Vision"""
+    try:
+        content = await file.read()
+        mime_type = file.content_type or "image/jpeg"
+        
+        extracted_drug = AIVisionService.extract_drug_from_image(content, mime_type)
+        
+        return {"drug": extracted_drug}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/analyze", response_model=AnalysisResponse)
 async def analyze_vcf(
     drug_name: str = Form(...),
@@ -333,3 +350,5 @@ async def analyze_vcf(
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# Trigger reload

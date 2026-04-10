@@ -174,6 +174,24 @@ const apiService = {
     }
   },
 
+  // Scan Pill Bottle from image
+  async scanPillBottle(imageFile) {
+    try {
+      const formData = new FormData();
+      formData.append('file', imageFile);
+
+      const response = await api.post('/api/scan-pill', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error, 'Failed to extract drug from image');
+    }
+  },
+
   // Utility function to check if backend is available
   async isBackendAvailable() {
     try {

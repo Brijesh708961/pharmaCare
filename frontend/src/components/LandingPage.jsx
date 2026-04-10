@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, Upload, Search, ShieldCheck, Dna, Activity, Users, FileText,
-  Beaker, Heart, MessageSquare, Link2, UploadCloud, Pill, Plus
+  Beaker, Heart, MessageSquare, Link2, UploadCloud, Pill, Plus, Loader2, Camera
 } from 'lucide-react';
+import apiService from '../services/api';
 
 /* ─── ANIMATION VARIANTS ──────────────────────────────────────── */
 const fadeUp = {
@@ -157,7 +158,9 @@ const MiniAnalyzer = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [customDrug, setCustomDrug] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
   const fileInputRef = useRef(null);
+  const photoInputRef = useRef(null);
 
   const vcfReady = !!vcfFile || !!vcfContent;
 
@@ -176,6 +179,29 @@ const MiniAnalyzer = ({
       handleDrugSelect(selectedDrugs.filter(d => (typeof d === 'string' ? d : d.name) !== id));
     } else {
       handleDrugSelect([...selectedDrugs, { name: id }]);
+    }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsScanning(true);
+      const data = await apiService.scanPillBottle(file);
+      if (data && data.drug) {
+        const detectedDrug = data.drug.toUpperCase();
+        const sel = selectedDrugs.some(d => (typeof d === 'string' ? d.toUpperCase() : d.name.toUpperCase()) === detectedDrug);
+        if (!sel) {
+          handleDrugSelect([...selectedDrugs, { name: detectedDrug }]);
+        }
+      }
+    } catch (error) {
+      console.error("Scan error", error);
+      alert("Failed to extract drug from image. Please try again.");
+    } finally {
+      setIsScanning(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
     }
   };
 
@@ -300,6 +326,21 @@ const MiniAnalyzer = ({
               aria-label="Add custom drug name"
               className={`flex-1 text-xs px-3 py-2 rounded-lg border focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${inputBg}`}
             />
+            <input 
+               type="file" 
+               accept="image/*" 
+               className="hidden" 
+               ref={photoInputRef} 
+               onChange={handlePhotoUpload} 
+            />
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              disabled={loading || isScanning}
+              className="flex items-center justify-center px-3 py-2 text-xs font-semibold rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              title="Upload picture of pill bottle label"
+            >
+              {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+            </button>
             <button
               onClick={() => {
                 if(customDrug.trim()) {

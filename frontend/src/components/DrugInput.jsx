@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Pill, Info, X } from 'lucide-react';
+import { Search, Pill, Info, X, Upload, Loader2 } from 'lucide-react';
+import apiService from '../services/api';
 
 const DrugInput = ({ onDrugSelect, selectedDrugs, isLoading, maxDrugs = 3, availableDrugs = [] }) => {
   const selectedDrugNames = selectedDrugs.map((drug) =>
@@ -8,6 +9,8 @@ const DrugInput = ({ onDrugSelect, selectedDrugs, isLoading, maxDrugs = 3, avail
   );
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDrugInfo, setSelectedDrugInfo] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Comprehensive list of pharmacogenomic drugs with categories
   const drugDatabase = [
@@ -62,6 +65,37 @@ const DrugInput = ({ onDrugSelect, selectedDrugs, isLoading, maxDrugs = 3, avail
     return 'bg-gray-100 text-gray-800';
   };
 
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsScanning(true);
+      const data = await apiService.scanPillBottle(file);
+      if (data && data.drug) {
+        let matchedDrug = visibleDrugDatabase.find(d => d.name.toLowerCase() === data.drug.toLowerCase());
+        if (!matchedDrug) {
+            matchedDrug = { name: data.drug.toLowerCase(), category: 'Custom/Scanned', indication: 'Scanned from label', genes: [] };
+        }
+        
+        if (!selectedDrugNames.includes(matchedDrug.name)) {
+            if (selectedDrugs.length >= maxDrugs) {
+              alert(`Maximum ${maxDrugs} drugs can be selected`);
+            } else {
+              onDrugSelect?.([...selectedDrugs, matchedDrug]);
+              setSearchTerm('');
+            }
+        }
+      }
+    } catch (error) {
+      console.error("Scan error", error);
+      alert("Failed to extract drug from image. Please try again.");
+    } finally {
+      setIsScanning(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -76,23 +110,44 @@ const DrugInput = ({ onDrugSelect, selectedDrugs, isLoading, maxDrugs = 3, avail
         
         {/* Drug Input */}
         <div className="relative">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleInputChange}
-              placeholder="Search for a drug (e.g., clopidogrel, warfarin, codeine)..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-              disabled={isLoading}
+          <div className="flex space-x-2 relative">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleInputChange}
+                placeholder="Search for a drug (e.g., clopidogrel, warfarin)..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                disabled={isLoading || isScanning}
+              />
+              {selectedDrugs.length >= maxDrugs && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <span className="text-xs text-amber-600 font-medium">
+                    Max {maxDrugs} drugs
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <input 
+               type="file" 
+               accept="image/*" 
+               className="hidden" 
+               ref={fileInputRef} 
+               onChange={handlePhotoUpload} 
+               title="Upload Image of Pill Bottle"
+               aria-label="Upload Image of Pill Bottle"
             />
-            {selectedDrugs.length >= maxDrugs && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <span className="text-xs text-amber-600 font-medium">
-                  Max {maxDrugs} drugs
-                </span>
-              </div>
-            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading || isScanning || selectedDrugs.length >= maxDrugs}
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Upload picture of pill bottle label"
+            >
+              {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              <span className="hidden sm:inline">{isScanning ? 'Scanning...' : 'Scan Photo'}</span>
+            </button>
           </div>
         </div>
       </div>
