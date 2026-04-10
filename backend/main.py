@@ -35,7 +35,10 @@ async def preload_model():
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, model_inference_service._load_assets)
 
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+cors_origins = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,https://pharma-care-kohl.vercel.app"
+)
 allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
 allow_all_origins = "*" in allowed_origins
 
