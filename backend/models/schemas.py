@@ -101,3 +101,22 @@ class HealthResponse(BaseModel):
     version: str = Field(..., description="API version")
     timestamp: str = Field(..., description="Current timestamp")
     services: Dict[str, str] = Field(..., description="Service status")
+
+# Auth models
+class BaseAuthResponse(BaseModel):
+    token: str
+    user: Dict[str, Any]
+
+class RegisterRequest(BaseModel):
+    name: str = Field(..., description="Full name")
+    email: str = Field(..., description="Email address")
+    password: str = Field(..., description="Password")
+
+class LoginRequest(BaseModel):
+    email: str = Field(..., description="Email address")
+    password: str = Field(..., description="Password")
+
+class RoleRequest(BaseModel):
+    token: str = Field(..., description="Auth token")
+    role: str = Field(..., description="User role (doctor or patient)")
+    wallet_address: Optional[str] = Field(None, description="Connected wallet address")

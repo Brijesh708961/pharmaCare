@@ -31,6 +31,12 @@ const Layout = ({ isHealthy, lastCheck, loading, darkMode, setDarkMode, showDemo
       navigate('/', { state: { scrollToSection: sectionId } });
     } else if (page === 'analyze') {
       navigate('/', { state: { scrollToSection: 'analyze' } });
+    } else if (page === 'auth') {
+      navigate('/auth');
+    } else if (page === 'role-selection') {
+      navigate('/role-selection');
+    } else if (page.startsWith('dashboard/')) {
+      navigate('/' + page);
     } else if (page === 'compatibility') {
       navigate('/compatibility');
     } else if (page === 'results') {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Sun, Menu, X, LogIn } from 'lucide-react';
+import { Moon, Sun, Menu, X, LogIn, User, Activity, Shield } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const NAV_LINKS = [
   { label: 'Home',                    href: '#home',        sectionId: 'home',         view: null },
@@ -11,22 +12,20 @@ const NAV_LINKS = [
 ];
 
 const PharmaLogo = ({ darkMode }) => (
-  <div className="flex items-center space-x-2">
-    <div className="relative w-8 h-8 flex-shrink-0">
-      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
-        <circle cx="18" cy="18" r="16.5" stroke={darkMode ? '#6aaa62' : '#2D5A3D'} strokeWidth="1.4"/>
-        <g stroke={darkMode ? '#6aaa62' : '#2D5A3D'} strokeWidth="1.3" strokeLinecap="round">
-          <line x1="18" y1="7" x2="18" y2="29"/>
-          <line x1="7" y1="18" x2="29" y2="18"/>
-          <line x1="10.5" y1="10.5" x2="25.5" y2="25.5"/>
-          <line x1="25.5" y1="10.5" x2="10.5" y2="25.5"/>
-        </g>
-        <circle cx="18" cy="18" r="2.8" fill={darkMode ? '#6aaa62' : '#2D5A3D'}/>
-      </svg>
+  <div className="flex items-center space-x-3 group">
+    <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-700 shadow-md shadow-emerald-600/20 group-hover:shadow-emerald-500/40 transition-shadow duration-300">
+      <Activity className="w-5 h-5 text-white" />
+      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-950' : 'bg-white'}`}>
+        <Shield className="w-2.5 h-2.5 text-emerald-500" />
+      </div>
     </div>
-    <div className="leading-tight select-none">
-      <span className={`text-[16px] font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>pharma</span>
-      <span className={`text-[16px] font-light italic ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Guard</span>
+    <div className="flex flex-col justify-center leading-none select-none">
+      <span className={`text-[19px] font-black tracking-tight uppercase ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        PHARMA<span className="text-emerald-500 font-light">GUARD</span>
+      </span>
+      <span className={`text-[9px] font-bold tracking-[0.25em] uppercase -mt-0.5 ml-[2px] ${darkMode ? 'text-emerald-400/80' : 'text-emerald-600/80'}`}>
+        Genomics
+      </span>
     </div>
   </div>
 );
@@ -41,6 +40,7 @@ const EnhancedHeader = ({
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const { user } = useAuth();
 
   // Track scroll position for header background
   useEffect(() => {
@@ -163,10 +163,10 @@ const EnhancedHeader = ({
 
             {/* Login / Analyze CTA */}
             <motion.button
-              onClick={() => onNavigate?.('analyze')}
+              onClick={() => onNavigate?.('role-selection')}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              aria-label={isLanding ? 'Open analysis tool' : 'Go to login'}
+              aria-label={isLanding ? 'Open login' : 'Go to login'}
               className="hidden sm:flex items-center space-x-1.5 px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
             >
               <LogIn className="w-3.5 h-3.5"/>
@@ -224,8 +224,8 @@ const EnhancedHeader = ({
                 );
               })}
               <button
-                onClick={() => { setMobileOpen(false); onNavigate?.('analyze'); }}
-                aria-label="Open analysis tool"
+                onClick={() => { setMobileOpen(false); onNavigate?.('role-selection'); }}
+                aria-label="Open login"
                 className="w-full mt-2 flex items-center justify-center space-x-2 px-4 py-2.5 bg-emerald-800 text-white text-sm font-semibold rounded-full"
               >
                 <LogIn className="w-3.5 h-3.5"/><span>Login</span>

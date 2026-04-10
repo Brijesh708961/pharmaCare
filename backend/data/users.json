@@ -1,0 +1,32 @@
+{
+    "users": {
+        "rbrijesh427@gmail.com": {
+            "name": "doctor",
+            "email": "rbrijesh427@gmail.com",
+            "password_hash": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
+            "role": null,
+            "wallet_address": null
+        },
+        "doctor@gmail.com": {
+            "name": "Dr. Demo",
+            "email": "doctor@gmail.com",
+            "password_hash": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
+            "role": "doctor",
+            "wallet_address": null
+        },
+        "patient@gmail.com": {
+            "name": "John Doe",
+            "email": "patient@gmail.com",
+            "password_hash": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
+            "role": "patient",
+            "wallet_address": null
+        }
+    },
+    "tokens": {
+        "f0e42bae8f4bd3e72df338d87f85b8163661ccb678f9546f549b68e09d693ae2": "rbrijesh427@gmail.com",
+        "8072f08e2b2a3e377ad1a24efdfc80e2d4ebd2cf4724dc5eff8b8ade221104dd": "doctor@gmail.com",
+        "580f03bace2c8c233ef5bfc3a2027fb77586f255f4bd6f121214cab8302e7ed8": "patient@gmail.com",
+        "0b29aab1c547dc8ed9a3547443abc732ad133ebf59ed85433b02cff9578c3857": "doctor@gmail.com",
+        "2d9df9bb7629aaecfccc37b2007e25505b259fba091be5371c04dd2c220f4c5c": "doctor@gmail.com"
+    }
+}

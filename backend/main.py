@@ -14,9 +14,11 @@ from services.llm_explainer import LLMExplainer
 from services.model_inference import ModelInferenceService
 from services.ollama_report import interpret_report_json
 from services.ollama_chatbot import chat_with_bot
+from services.auth_service import AuthService
 from models.schemas import (
     AnalysisRequest, AnalysisResponse, DrugListResponse, HealthResponse,
-    DrugInfo, RiskAssessment, Explanation, QualityMetrics, GeneProfile
+    DrugInfo, RiskAssessment, Explanation, QualityMetrics, GeneProfile,
+    RegisterRequest, LoginRequest, RoleRequest, BaseAuthResponse
 )
 
 app = FastAPI(title="PharmaGuard API")
@@ -54,6 +56,34 @@ def health_check():
             "llm_explainer": "active"
         }
     )
+
+@app.post("/api/auth/register")
+def register_user(payload: RegisterRequest):
+    try:
+        return AuthService.register(payload.name, payload.email, payload.password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@app.post("/api/auth/login")
+def login_user(payload: LoginRequest):
+    try:
+        return AuthService.login(payload.email, payload.password)
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Login failed")
+
+@app.post("/api/auth/set-role")
+def set_user_role(payload: RoleRequest):
+    try:
+        user_data = AuthService.set_role(payload.token, payload.role, payload.wallet_address)
+        return {"success": True, "user": user_data}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to set role")
 
 @app.post("/api/report/interpret")
 async def interpret_exported_report(payload: dict = Body(...)):

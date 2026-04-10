@@ -5,6 +5,11 @@ import Landing from './pages/Landing';
 import ResultsPage from './pages/ResultsPage';
 import ReportPage from './pages/ReportPage';
 import Compatibility from './pages/Compatibility';
+import AuthPage from './pages/AuthPage';
+import RoleSelection from './pages/RoleSelection';
+import DoctorDashboard from './pages/DoctorDashboard';
+import PatientDashboard from './pages/PatientDashboard';
+import { useAuth } from './context/AuthContext';
 import { useVCFAnalysis, useHealthCheck, useSupportedDrugs } from './hooks/useApi';
 
 function App() {
@@ -14,6 +19,8 @@ function App() {
   const [currentPatient, setCurrentPatient] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [analysisError, setAnalysisError] = useState(null);
+  
+  const { user } = useAuth();
   const [showDemo, setShowDemo] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
@@ -176,6 +183,7 @@ function App() {
         />
         <Route path="/compatibility" element={<Compatibility darkMode={darkMode} />} />
         
+        
         {/* Legacy redirect for users who bookmark or refresh /analyze */}
         <Route path="/analyze" element={<Navigate to="/" replace state={{ scrollToSection: 'analyze' }} />} />
         
@@ -197,6 +205,13 @@ function App() {
           element={<ReportPage darkMode={darkMode} />} 
         />
       </Route>
+
+      {/* Auth & Dashboards */}
+      <Route path="/auth" element={!user ? <AuthPage darkMode={darkMode} /> : <Navigate to="/role-selection" replace />} />
+      <Route path="/role-selection" element={user?.role ? <Navigate to={`/dashboard/${user.role}`} replace /> : <RoleSelection darkMode={darkMode} />} />
+      <Route path="/dashboard/doctor/*" element={user?.role === 'doctor' ? <DoctorDashboard darkMode={darkMode} setDarkMode={setDarkMode} /> : <Navigate to="/" replace />} />
+      <Route path="/dashboard/patient/*" element={user?.role === 'patient' ? <PatientDashboard darkMode={darkMode} setDarkMode={setDarkMode} /> : <Navigate to="/" replace />} />
+      
     </Routes>
   );
 }
