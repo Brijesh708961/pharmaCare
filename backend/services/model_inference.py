@@ -79,7 +79,6 @@ class ModelInferenceService:
             self.enabled = False
 
     def predict_drug_response(self, drug_name: str, pharmacogenomic_profile: Dict) -> ModelPredictionResult:
-        self._load_assets()  # Lazy load on first use
         if not self.enabled or self.model is None:
             raise RuntimeError("ML model service is disabled")
 
@@ -108,7 +107,6 @@ class ModelInferenceService:
         return ModelPredictionResult(response=response, source="ml_model")
 
     def get_supported_drugs(self) -> List[str]:
-        self._load_assets()  # Lazy load on first use
         if not self.enabled or self.encoders is None or "drug" not in self.encoders:
             return []
         return sorted(list(self.encoders["drug"].classes_))

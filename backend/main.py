@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
 import json
+import asyncio
 from datetime import datetime
 from typing import Optional
 import time
@@ -27,6 +28,12 @@ from models.schemas import (
 
 app = FastAPI(title="PharmaGuard API")
 model_inference_service = ModelInferenceService()
+
+@app.on_event("startup")
+async def preload_model():
+    """Load the ML model in a background thread so it never blocks the event loop."""
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, model_inference_service._load_assets)
 
 cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
